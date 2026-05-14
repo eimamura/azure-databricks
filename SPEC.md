@@ -165,6 +165,23 @@ For this setup, a minimal Resource Group module is created.
 
 Run `terraform init`, `terraform plan`, and `terraform apply` inside each environment folder.
 
+### File Splitting
+
+Each environment folder splits Terraform configuration by resource concern. Do not consolidate module calls into `main.tf`.
+
+```
+envs/<env>/
+  main.tf         # provider + data sources + resource_group only
+  databricks.tf   # module "databricks_workspace"
+  storage.tf      # module "storage_account"
+  ai_foundry.tf   # module "key_vault" + module "ai_foundry"
+  variables.tf    # all variable declarations
+  outputs.tf      # all output declarations
+  terraform.tfvars
+```
+
+When adding a new module, create a new `<resource>.tf` file alongside `main.tf`.
+
 ### State
 
 No backend is configured in this setup.

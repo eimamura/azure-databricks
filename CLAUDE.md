@@ -28,6 +28,23 @@ Makefile
 
 Each `envs/<env>/` is an independent Terraform root module with its own state file.
 
+## File Splitting Rule
+
+Do **not** put all module calls in `main.tf`. Split by resource concern:
+
+```
+envs/<env>/
+  main.tf         # provider + data sources + resource_group only
+  databricks.tf   # module "databricks_workspace"
+  storage.tf      # module "storage_account"
+  ai_foundry.tf   # module "key_vault" + module "ai_foundry"
+  variables.tf    # all variable declarations
+  outputs.tf      # all output declarations
+  terraform.tfvars
+```
+
+When adding a new module, create a new `<resource>.tf` file — do not append to `main.tf`.
+
 ## Common Commands
 
 ```bash
