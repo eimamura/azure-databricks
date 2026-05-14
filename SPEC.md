@@ -157,7 +157,7 @@ make destroy ENV=dev
 
 Place reusable Terraform modules under `modules/`.
 
-For this setup, a minimal Resource Group module is created.
+Each module encapsulates a single Azure resource (or tightly related group of resources). Modules are called from environment `.tf` files and receive all values via variables — no hardcoded values inside modules.
 
 ### envs
 
@@ -171,16 +171,14 @@ Each environment folder splits Terraform configuration by resource concern. Do n
 
 ```
 envs/<env>/
-  main.tf         # provider + data sources + resource_group only
-  databricks.tf   # module "databricks_workspace"
-  storage.tf      # module "storage_account"
-  ai_foundry.tf   # module "key_vault" + module "ai_foundry"
-  variables.tf    # all variable declarations
-  outputs.tf      # all output declarations
+  main.tf           # provider + data sources + resource_group only
+  <resource>.tf     # one file per resource or related resource group
+  variables.tf      # all variable declarations
+  outputs.tf        # all output declarations
   terraform.tfvars
 ```
 
-When adding a new module, create a new `<resource>.tf` file alongside `main.tf`.
+When adding a new module, create a new `<resource>.tf` file — do not append to `main.tf`.
 
 ### State
 
@@ -194,9 +192,36 @@ terraform/envs/stg/terraform.tfstate
 terraform/envs/prd/terraform.tfstate
 ```
 
+### Naming Conventions
+
+Use a consistent pattern for all resource names:
+
+```
+<prefix>-<project>-<env>        # for resources that allow hyphens
+<prefix><project><env>          # for resources that do not allow hyphens
+```
+
+#### Random suffix rule
+
+Any Azure resource that requires a **globally unique name** must include a random suffix generated inside the module:
+
+```hcl
+resource "random_string" "suffix" {
+  length  = 6
+  lower   = true
+  upper   = false
+  numeric = true
+  special = false
+}
+```
+
+The suffix is appended to the name variable inside the module. It is stable after the first `apply` (persisted in state) and never changes on subsequent runs.
+
+This rule applies regardless of which resource type is being added. Check the Azure documentation for each resource to determine if a globally unique name is required.
+
 ### Provider
 
-Uses the AzureRM provider.
+Uses the AzureRM provider and the HashiCorp Random provider.
 
 Each environment's `main.tf` includes:
 
@@ -208,6 +233,10 @@ terraform {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
     }
   }
 }
@@ -610,6 +639,25 @@ The `terraform.tfvars` in this setup only contains the following, so it is safe 
 - `environment`
 - `location`
 - `resource_group_name`
+
+---
+
+## Cost Warning
+
+The following resources incur Azure charges when deployed. Destroy environments when not in use.
+
+| Resource | Billing |
+|----------|---------|
+| Azure Databricks Workspace | Charged per DBU when clusters are running |
+| Azure AI Foundry | Charged per model inference / compute usage |
+| Storage Account | Charged per GB stored and transactions |
+| Key Vault | Charged per operation (minimal for PoC) |
+
+```bash
+make destroy ENV=dev
+make destroy ENV=stg
+make destroy ENV=prd
+```
 
 ---
 

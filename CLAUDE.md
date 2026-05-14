@@ -34,16 +34,18 @@ Do **not** put all module calls in `main.tf`. Split by resource concern:
 
 ```
 envs/<env>/
-  main.tf         # provider + data sources + resource_group only
-  databricks.tf   # module "databricks_workspace"
-  storage.tf      # module "storage_account"
-  ai_foundry.tf   # module "key_vault" + module "ai_foundry"
-  variables.tf    # all variable declarations
-  outputs.tf      # all output declarations
+  main.tf           # provider + data sources + resource_group only
+  <resource>.tf     # one file per resource or related resource group
+  variables.tf      # all variable declarations
+  outputs.tf        # all output declarations
   terraform.tfvars
 ```
 
 When adding a new module, create a new `<resource>.tf` file — do not append to `main.tf`.
+
+## Random Suffix Rule
+
+Any resource that requires a globally unique Azure name must generate a random suffix **inside the module** using `random_string` (length=6, lowercase alphanumeric). Do not manage uniqueness from the environment layer. Check Azure docs for each resource to determine if a globally unique name is required.
 
 ## Common Commands
 
@@ -58,10 +60,11 @@ make destroy ENV=dev    # terraform destroy
 
 `ENV` defaults to `dev` when omitted.
 
-## Terraform Version & Provider
+## Terraform Version & Providers
 
 - Terraform `>= 1.6.0`
 - AzureRM provider `~> 4.0`
+- Random provider `~> 3.0` (required when any module uses `random_string`)
 
 ## Git Rules
 
