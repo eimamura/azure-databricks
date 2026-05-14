@@ -1,0 +1,7 @@
+environment               = "stg"
+location                  = "eastus"
+resource_group_name       = "rg-sample-stg"
+databricks_workspace_name = "dbw-sample-stg"
+storage_account_name      = "stdbwsamplestg"
+key_vault_name            = "kv-sample-stg"
+ai_foundry_name           = "aif-sample-stg"

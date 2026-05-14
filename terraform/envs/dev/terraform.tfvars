@@ -1,0 +1,7 @@
+environment               = "dev"
+location                  = "eastus"
+resource_group_name       = "rg-sample-dev"
+databricks_workspace_name = "dbw-sample-dev"
+storage_account_name      = "stdbwsampledev"
+key_vault_name            = "kv-sample-dev"
+ai_foundry_name           = "aif-sample-dev"

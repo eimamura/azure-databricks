@@ -1,0 +1,7 @@
+environment               = "prod"
+location                  = "eastus"
+resource_group_name       = "rg-sample-prod"
+databricks_workspace_name = "dbw-sample-prod"
+storage_account_name      = "stdbwsampleprod"
+key_vault_name            = "kv-sample-prod"
+ai_foundry_name           = "aif-sample-prod"
