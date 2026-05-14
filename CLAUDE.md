@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Learning / PoC Terraform configuration that provisions Azure Resource Groups per environment (dev / stg / prod) using Azure CLI authentication and local state.
+Learning / PoC Terraform configuration that provisions Azure Resource Groups per environment (dev / stg / prd) using Azure CLI authentication and local state.
 
 ## Key Constraints
 
 - Authentication: Azure CLI only (`az login`)
 - State: local (`terraform.tfstate`) — no remote backend
 - Apply: local only — no CI/CD
-- Environments: `dev`, `stg`, `prod`
+- Environments: `dev`, `stg`, `prd`
 - Region: `eastus`
 - Remote State, CI/CD, Service Principal, and OIDC are out of scope
 
@@ -22,7 +22,7 @@ terraform/
   envs/
     dev/              # Independent root module
     stg/
-    prod/
+    prd/
 Makefile
 ```
 
@@ -73,4 +73,4 @@ Never commit: `.terraform/`, `*.tfstate`, `*.tfstate.*`
 
 - Add a backend configuration block
 - Hardcode secrets in `terraform.tfvars`
-- Run `terraform apply` against prod with personal credentials in a real environment
+- Run `terraform apply` against prd with personal credentials in a real environment

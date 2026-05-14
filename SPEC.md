@@ -9,7 +9,7 @@ This SPEC assumes the following:
 - Authentication uses Azure CLI
 - State is managed locally
 - Apply is also executed locally
-- Three environments are provisioned: `dev`, `stg`, `prod`
+- Three environments are provisioned: `dev`, `stg`, `prd`
 - Azure region is `eastus`
 - This is a learning / PoC configuration
 - Remote State, CI/CD, Service Principal, and OIDC are out of scope
@@ -33,7 +33,7 @@ terraform init
 terraform plan
 terraform apply
 
-cd terraform/envs/prod
+cd terraform/envs/prd
 terraform init
 terraform plan
 terraform apply
@@ -92,7 +92,7 @@ terraform/
       terraform.tfvars
       outputs.tf
 
-    prod/
+    prd/
       main.tf
       variables.tf
       terraform.tfvars
@@ -107,7 +107,7 @@ Makefile
 
 A `Makefile` is placed at the repository root to wrap common Terraform operations.
 
-All targets accept an `ENV` variable (`dev`, `stg`, or `prod`).
+All targets accept an `ENV` variable (`dev`, `stg`, or `prd`).
 
 ### `Makefile`
 
@@ -161,7 +161,7 @@ For this setup, a minimal Resource Group module is created.
 
 ### envs
 
-`envs/dev`, `envs/stg`, and `envs/prod` are each independent Terraform root modules.
+`envs/dev`, `envs/stg`, and `envs/prd` are each independent Terraform root modules.
 
 Run `terraform init`, `terraform plan`, and `terraform apply` inside each environment folder.
 
@@ -191,7 +191,7 @@ Each environment's state is stored locally in its own folder.
 ```
 terraform/envs/dev/terraform.tfstate
 terraform/envs/stg/terraform.tfstate
-terraform/envs/prod/terraform.tfstate
+terraform/envs/prd/terraform.tfstate
 ```
 
 ### Provider
@@ -420,9 +420,9 @@ output "resource_group_id" {
 
 ---
 
-## prod Environment
+## prd Environment
 
-### `terraform/envs/prod/variables.tf`
+### `terraform/envs/prd/variables.tf`
 
 ```hcl
 variable "environment" {
@@ -441,7 +441,7 @@ variable "resource_group_name" {
 }
 ```
 
-### `terraform/envs/prod/main.tf`
+### `terraform/envs/prd/main.tf`
 
 ```hcl
 terraform {
@@ -472,15 +472,15 @@ module "resource_group" {
 }
 ```
 
-### `terraform/envs/prod/terraform.tfvars`
+### `terraform/envs/prd/terraform.tfvars`
 
 ```hcl
-environment         = "prod"
+environment         = "prd"
 location            = "eastus"
-resource_group_name = "rg-sample-prod"
+resource_group_name = "rg-sample-prd"
 ```
 
-### `terraform/envs/prod/outputs.tf`
+### `terraform/envs/prd/outputs.tf`
 
 ```hcl
 output "resource_group_name" {
@@ -506,7 +506,7 @@ make plan ENV=dev
 make apply ENV=dev
 ```
 
-Repeat with `ENV=stg` and `ENV=prod` for other environments.
+Repeat with `ENV=stg` and `ENV=prd` for other environments.
 
 ### Using Terraform directly
 
@@ -532,10 +532,10 @@ terraform plan
 terraform apply
 ```
 
-#### prod
+#### prd
 
 ```bash
-cd terraform/envs/prod
+cd terraform/envs/prd
 terraform init
 terraform fmt
 terraform validate
@@ -552,7 +552,7 @@ terraform apply
 ```bash
 make destroy ENV=dev
 make destroy ENV=stg
-make destroy ENV=prod
+make destroy ENV=prd
 ```
 
 ### Using Terraform directly
@@ -633,7 +633,7 @@ Azure CLI User Login
 Service Principal / OIDC
 ```
 
-In production, do not run `terraform apply` against prod using a developer's personal Azure CLI credentials.
+In production, do not run `terraform apply` against prd using a developer's personal Azure CLI credentials.
 
 ---
 
@@ -645,7 +645,7 @@ The setup is complete when all of the following are satisfied:
 - [ ] `terraform/modules/resource_group` is created
 - [ ] `terraform/envs/dev` is created
 - [ ] `terraform/envs/stg` is created
-- [ ] `terraform/envs/prod` is created
+- [ ] `terraform/envs/prd` is created
 - [ ] `terraform init` succeeds in each environment
 - [ ] `terraform fmt` succeeds in each environment
 - [ ] `terraform validate` succeeds in each environment

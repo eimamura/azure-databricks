@@ -1,6 +1,6 @@
 # azure-databricks
 
-A learning / PoC Terraform configuration for managing Azure Resource Groups per environment (dev / stg / prod).
+A learning / PoC Terraform configuration for managing Azure Resource Groups per environment (dev / stg / prd).
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ terraform/
   envs/
     dev/              # dev environment
     stg/              # stg environment
-    prod/             # prod environment
+    prd/             # prd environment
 ```
 
 ## How to Run
@@ -48,7 +48,7 @@ terraform plan
 terraform apply
 ```
 
-Repeat for `stg` and `prod`.
+Repeat for `stg` and `prd`.
 
 ## Destroy
 
