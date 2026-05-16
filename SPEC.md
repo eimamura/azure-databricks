@@ -180,6 +180,12 @@ envs/<env>/
 
 When adding a new module, create a new `<resource>.tf` file — do not append to `main.tf`.
 
+### Commenting Out a Module
+
+When a module call is commented out in `<resource>.tf`, its corresponding outputs in `outputs.tf` must also be commented out. Terraform will error at plan/validate time if `outputs.tf` references a module that is not declared.
+
+Always comment/uncomment both the module block and its outputs together.
+
 ### State
 
 No backend is configured in this setup.

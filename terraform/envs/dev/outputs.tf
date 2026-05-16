@@ -6,13 +6,13 @@ output "resource_group_id" {
   value = module.resource_group.id
 }
 
-output "databricks_workspace_id" {
-  value = module.databricks_workspace.id
-}
+# output "databricks_workspace_id" {
+#   value = module.databricks_workspace.id
+# }
 
-output "databricks_workspace_url" {
-  value = module.databricks_workspace.workspace_url
-}
+# output "databricks_workspace_url" {
+#   value = module.databricks_workspace.workspace_url
+# }
 
 output "storage_account_name" {
   value = module.storage_account.name

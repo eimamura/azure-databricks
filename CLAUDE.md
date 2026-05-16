@@ -72,6 +72,12 @@ Commit: `*.tf`, `*.tfvars`, `.terraform.lock.hcl`, `SPEC.md`, `README.md`, `CLAU
 
 Never commit: `.terraform/`, `*.tfstate`, `*.tfstate.*`
 
+## Commenting Out a Module
+
+When a module call is commented out in `<resource>.tf`, its corresponding outputs in `outputs.tf` must also be commented out. Terraform will error if `outputs.tf` references a module that is not declared.
+
+Always comment/uncomment both files together.
+
 ## Do Not
 
 - Add a backend configuration block
