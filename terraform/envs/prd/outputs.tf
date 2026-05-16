@@ -37,3 +37,11 @@ output "ai_foundry_id" {
 output "ai_foundry_principal_id" {
   value = module.ai_foundry.principal_id
 }
+
+output "ai_foundry_endpoint" {
+  value = module.ai_foundry.endpoint
+}
+
+output "ai_foundry_project_id" {
+  value = module.ai_foundry.project_id
+}

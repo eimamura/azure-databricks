@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Azure AI Foundry hub name."
+  description = "Base name for the Azure AI Foundry account (random suffix appended)."
   type        = string
 }
 
@@ -13,18 +13,13 @@ variable "location" {
   type        = string
 }
 
-variable "storage_account_id" {
-  description = "Storage account resource ID to associate with the hub."
-  type        = string
-}
-
-variable "key_vault_id" {
-  description = "Key Vault resource ID to associate with the hub."
+variable "project_name" {
+  description = "Name of the AI Foundry project to create under the account."
   type        = string
 }
 
 variable "tags" {
-  description = "Tags applied to the AI Foundry hub."
+  description = "Tags applied to all resources."
   type        = map(string)
   default     = {}
 }

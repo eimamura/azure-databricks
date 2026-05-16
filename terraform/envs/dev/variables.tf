@@ -13,11 +13,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "databricks_workspace_name" {
-  description = "Databricks workspace name."
-  type        = string
-}
-
 variable "storage_account_name" {
   description = "Storage account name (3-24 chars, lowercase alphanumeric, globally unique)."
   type        = string
@@ -30,5 +25,10 @@ variable "key_vault_name" {
 
 variable "ai_foundry_name" {
   description = "Azure AI Foundry hub name."
+  type        = string
+}
+
+variable "ai_foundry_project_name" {
+  description = "Name of the AI Foundry project created under the Foundry account."
   type        = string
 }

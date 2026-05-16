@@ -1,6 +1,11 @@
 variable "name" {
-  description = "Storage account name (3-24 chars, lowercase alphanumeric only, globally unique)."
+  description = "Storage account base name. Random suffix (6 chars) is appended; total must not exceed 24 chars, so max 18 chars here. Lowercase alphanumeric only."
   type        = string
+
+  validation {
+    condition     = length(var.name) >= 3 && length(var.name) <= 18 && can(regex("^[a-z0-9]+$", var.name))
+    error_message = "Storage account name prefix must be 3-18 lowercase alphanumeric chars (a 6-char suffix is appended to stay within Azure's 24-char limit)."
+  }
 }
 
 variable "resource_group_name" {

@@ -65,6 +65,7 @@ make destroy ENV=dev    # terraform destroy
 - Terraform `>= 1.6.0`
 - AzureRM provider `~> 4.0`
 - Random provider `~> 3.0` (required when any module uses `random_string`)
+- AzAPI provider `~> 2.0` (required for `ai_foundry` module)
 
 ## Git Rules
 
@@ -83,3 +84,10 @@ Always comment/uncomment both files together.
 - Add a backend configuration block
 - Hardcode secrets in `terraform.tfvars`
 - Run `terraform apply` against prd with personal credentials in a real environment
+- Use `azurerm_ai_foundry` — this creates the legacy Azure AI Hub (`Microsoft.MachineLearningServices/workspaces` kind=Hub), not the new Foundry resource. Use `azurerm_cognitive_account` (kind=AIServices) instead.
+
+## Azure AI Foundry
+
+Foundry 関連は複雑なため詳細を別ファイルに記録している。
+
+→ [`docs/azure-ai-foundry.md`](docs/azure-ai-foundry.md)
