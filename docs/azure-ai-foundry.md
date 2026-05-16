@@ -1,35 +1,35 @@
-# Azure AI Foundry — Terraform リファレンス
+# Azure AI Foundry — Terraform Reference
 
-## リソース型の整理
+## Resource Type Overview
 
-Azure AI Foundry には名前が似た複数のリソース型が存在し混乱しやすい。
+Azure AI Foundry has multiple resource types with similar names that are easy to confuse.
 
-| リソース | プロバイダー | 種別 | 用途 |
+| Resource | Provider | Type | Purpose |
 |---|---|---|---|
-| `azurerm_ai_foundry` | AzureRM | `Microsoft.MachineLearningServices/workspaces` kind=Hub | **Classic Hub（旧世代）。新規では使わない** |
-| `azurerm_ai_foundry_project` | AzureRM | 〃 の Project | 同上、使わない |
-| `azurerm_cognitive_account` | AzureRM | `Microsoft.CognitiveServices/accounts` kind=AIServices | **新 Foundry リソース。こちらを使う** |
-| `azurerm_cognitive_account_project` | AzureRM | 〃 の Project | 新 Foundry のプロジェクト |
-| `azurerm_cognitive_deployment` | AzureRM | 〃 の Deployment | モデルデプロイ |
-| `azapi_resource` | AzAPI | 任意の ARM リソース | Connections / Agent standard 等、AzureRM 未対応の高度設定 |
+| `azurerm_ai_foundry` | AzureRM | `Microsoft.MachineLearningServices/workspaces` kind=Hub | **Classic Hub (legacy). Do not use for new deployments.** |
+| `azurerm_ai_foundry_project` | AzureRM | Project under the above | Same — do not use. |
+| `azurerm_cognitive_account` | AzureRM | `Microsoft.CognitiveServices/accounts` kind=AIServices | **New Foundry resource. Use this.** |
+| `azurerm_cognitive_account_project` | AzureRM | Project under the above | Foundry project |
+| `azurerm_cognitive_deployment` | AzureRM | Deployment under the above | Model deployment |
+| `azapi_resource` | AzAPI | Any ARM resource | Advanced Foundry config not yet supported by AzureRM (Connections, Agent standard setup, etc.) |
 
 ---
 
-## 推奨構成
+## Recommended Architecture
 
 ```
-azurerm_cognitive_account          # Foundry リソース本体
+azurerm_cognitive_account          # Foundry account
   └─ azurerm_cognitive_account_project
-      └─ azurerm_cognitive_deployment   # モデルデプロイ（任意）
+      └─ azurerm_cognitive_deployment   # model deployment (optional)
 ```
 
-高度な設定（Connections / Agent standard setup / BYO Storage など）は AzureRM が未対応のため AzAPI を併用する。
+Advanced features (Connections, Agent standard setup, BYO Storage, etc.) are not yet supported by the AzureRM provider. Use AzAPI for those.
 
 ---
 
-## 最小 Terraform 実装
+## Minimal Terraform Implementation
 
-### Foundry アカウント
+### Foundry Account
 
 ```hcl
 resource "azurerm_cognitive_account" "foundry" {
@@ -40,10 +40,10 @@ resource "azurerm_cognitive_account" "foundry" {
   kind     = "AIServices"
   sku_name = "S0"
 
-  custom_subdomain_name         = "aifsampledev"   # グローバルユニーク、英数小文字のみ、最大24文字
-  project_management_enabled    = true              # Foundry として動かす必須フラグ
-  local_auth_enabled            = true              # false にすると API Key 無効（Entra ID のみ）
-  public_network_access_enabled = true              # dev 環境向け。本番では false 推奨
+  custom_subdomain_name         = "aifsampledev"   # globally unique, lowercase alphanumeric only, max 24 chars
+  project_management_enabled    = true              # required to operate as a Foundry resource
+  local_auth_enabled            = true              # set to false to disable API Key auth (Entra ID only)
+  public_network_access_enabled = true              # suitable for dev; set to false in production
 
   identity {
     type = "SystemAssigned"
@@ -53,7 +53,7 @@ resource "azurerm_cognitive_account" "foundry" {
 }
 ```
 
-### Foundry プロジェクト
+### Foundry Project
 
 ```hcl
 resource "azurerm_cognitive_account_project" "project" {
@@ -67,7 +67,7 @@ resource "azurerm_cognitive_account_project" "project" {
 }
 ```
 
-### モデルデプロイ（任意）
+### Model Deployment (optional)
 
 ```hcl
 resource "azurerm_cognitive_deployment" "gpt4o_mini" {
@@ -89,62 +89,62 @@ resource "azurerm_cognitive_deployment" "gpt4o_mini" {
 
 ---
 
-## このプロジェクトのモジュール設計
+## Module Design for This Project
 
 ### `terraform/modules/ai_foundry/`
 
-- `azurerm_cognitive_account` + `azurerm_cognitive_account_project` を一括管理
-- `random_string` で account name と `custom_subdomain_name` にサフィックスを付与（グローバルユニーク対応）
-- `custom_subdomain_name` は最大 24 文字制限のため `substr(..., 0, 24)` でトリミング
-- AzAPI プロバイダーはモジュール内では使用しない。env の `main.tf` には残す（将来の高度設定用）
+- Manages `azurerm_cognitive_account` and `azurerm_cognitive_account_project` together.
+- A `random_string` resource appends a 6-character suffix to the account name and `custom_subdomain_name` for global uniqueness.
+- `custom_subdomain_name` is capped at 24 characters using `substr(..., 0, 24)`.
+- The AzAPI provider is not used inside the module. It is kept in each env's `main.tf` for future advanced configuration.
 
-### モジュールが受け取る変数
+### Module Variables
 
-| 変数 | 説明 |
+| Variable | Description |
 |---|---|
-| `name` | アカウントのベース名（サフィックスが付く） |
-| `resource_group_name` | リソースグループ名（azurerm は name で受け取る） |
-| `location` | Azure リージョン |
-| `project_name` | Foundry プロジェクト名 |
-| `tags` | タグ |
+| `name` | Base name for the account (random suffix is appended) |
+| `resource_group_name` | Resource group name (AzureRM takes the name, not the ID) |
+| `location` | Azure region |
+| `project_name` | Name of the Foundry project |
+| `tags` | Resource tags |
 
 ---
 
-## 注意点
+## Important Notes
 
-### `azurerm_ai_foundry` は使わない
+### Do not use `azurerm_ai_foundry`
 
-名前が紛らわしいが、これは旧 Classic Hub を作るリソース。Portal で見ると「Azure AI hub」と表示される。新規で Foundry リソースを作る場合は `azurerm_cognitive_account` (kind=AIServices) を使う。
+Despite the name, this resource creates a Classic Hub (`Microsoft.MachineLearningServices/workspaces` kind=Hub), which appears as "Azure AI hub" in the Portal. For new Foundry deployments, use `azurerm_cognitive_account` with `kind = "AIServices"`.
 
-### `custom_subdomain_name` の制約
+### `custom_subdomain_name` Constraints
 
-- グローバルユニーク（Azure 全体で重複不可）
-- 英小文字・数字のみ（ハイフン不可）
-- 最大 24 文字
+- Must be globally unique across Azure.
+- Lowercase alphanumeric characters only — no hyphens.
+- Maximum 24 characters.
 
-### `project_management_enabled = true` は必須
+### `project_management_enabled = true` is Required
 
-これが `false`（デフォルト）のままだと、Portal 上で Foundry として認識されず、プロジェクト作成が不可になる。`kind = "AIServices"` のときのみ設定可能。
+If this is left at the default (`false`), the resource will not function as a Foundry resource in the Portal and project creation will be disabled. This attribute can only be set to `true` when `kind = "AIServices"`.
 
-### AzureRM が追いついていない機能
+### Features Not Yet Supported by AzureRM (as of May 2025)
 
-以下は 2025年5月時点で AzureRM 未対応。AzAPI を使う：
+Use AzAPI for the following:
 
-- Connections（他サービスとの接続設定）
+- Connections (linking external services)
 - Capability Host / Agent standard setup
-- BYO Storage / Application Insights の紐付け
-- Network Injection（Agent Client のサブネット注入）
+- BYO Storage / Application Insights attachment
+- Network Injection (injecting Agent Client into a subnet)
 
-### soft-delete による名前衝突
+### Soft-Delete Name Collision
 
-`terraform destroy` 後に同名で `apply` すると、soft-delete 中のリソース名と衝突してエラーになる場合がある（特に Key Vault）。PoC での destroy/apply サイクルに注意。
+After `terraform destroy`, running `terraform apply` with the same name may fail because the resource is still in soft-deleted state (especially Key Vault). Be careful with repeated destroy/apply cycles in PoC environments.
 
 ---
 
-## 参考リンク
+## References
 
-- [Azure AI Foundry リソース種別の概念](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/resource-types)
-- [Terraform で Foundry を作成する公式ガイド](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-resource-terraform)
-- [azurerm_cognitive_account ドキュメント](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account)
-- [Foundry Samples 公式リファレンス実装](https://github.com/azure-ai-foundry/foundry-samples)
-- [AVM Pattern Module (参考)](https://github.com/Azure/terraform-azurerm-avm-ptn-aiml-ai-foundry)
+- [Azure AI Foundry resource type concepts](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/resource-types)
+- [Create a Foundry resource with Terraform (official guide)](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-resource-terraform)
+- [azurerm_cognitive_account documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account)
+- [Foundry Samples — official reference implementation](https://github.com/azure-ai-foundry/foundry-samples)
+- [AVM Pattern Module (reference)](https://github.com/Azure/terraform-azurerm-avm-ptn-aiml-ai-foundry)
